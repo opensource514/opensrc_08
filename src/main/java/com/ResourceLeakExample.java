@@ -12,6 +12,7 @@ public class ResourceLeakExample {
            String firstLine = reader.readLine();
            System.out.println(firstLine);
            // The reader is not closed in this execution path
+           close(reader);
            if (firstLine == null) {
                return;
            }
