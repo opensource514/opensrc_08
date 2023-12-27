@@ -28,6 +28,7 @@ jobs:
         run: |
           npm install conventional-changelog-conventionalcommits
           npm install commitlint@latest
+          npm install --save-dev @commitlint/{config-conventional,cli}
           
       - name: Configure commitlint
         run: |
