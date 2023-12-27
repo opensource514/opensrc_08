@@ -8,6 +8,10 @@ on:
 
 jobs:
 
+  commitlint:
+    name: Check commit message format
+    uses: ./.github/workflows/configuration.yml
+
   analyze:
     name: Analyze
     # Runner size impacts CodeQL analysis time. To learn more, please see:
