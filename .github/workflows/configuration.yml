@@ -13,6 +13,7 @@ jobs:
     uses: ./.github/workflows/commitlint.yml
 
   analyze:
+    needs: commitlint
     name: Analyze
     # Runner size impacts CodeQL analysis time. To learn more, please see:
     #   - https://gh.io/recommended-hardware-resources-for-running-codeql
