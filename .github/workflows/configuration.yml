@@ -10,7 +10,7 @@ jobs:
 
   commitlint:
     name: Check commit message format
-    uses: ./.github/workflows/configuration.yml
+    uses: ./.github/workflows/commitlint.yml
 
   analyze:
     name: Analyze
