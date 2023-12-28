@@ -54,102 +54,28 @@ jobs:
         uses: actions/github-script@v4
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Print commitlint output
+        if: ${{ failure() }}
+        uses: actions/github-script@v5
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const { GitHub } = require('@actions/github');
-
-            async function run() {
-              const octokit = new GitHub(process.env.GITHUB_TOKEN);
-  
-              const { data } = await octokit.rest.checks.get({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                check_run_id: context.payload.workflow_run.id,
-              });
-
-              let output = '';
-
-              output = process.env.OUTPUT;
-
-              const annotations = [
-                {
-                  path: '',
-                  start_line: 1,
-                  end_line: 1,
-                  annotation_level: 'failure',
-                  message: output,
-                },
-              ];
-
-              const updatedData = {
-                ...data,
-                output: {
-                  ...data.output,
-                  annotations,
-                },
-              };
-
-              await octokit.rest.checks.update({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                check_run_id: context.payload.workflow_run.id,
-                output: updatedData.output,
-              });
-            }
-
-            run();
-
-            # async function run() {
-            #   const octokit = new GitHub(process.env.GITHUB_TOKEN);
-
-            #   const { data } = await octokit.rest.checks.get({
-            #     owner: context.repo.owner,
-            #     repo: context.repo.repo,
-            #     check_run_id: context.payload.workflow_run.id,
-            #   });
-            #   # const { checkRun } = require("@actions/github");
-
-            #   # async function run() {
-            #   #   const { data } = await checkRun.get({
-            #   #     owner: context.repo.owner,
-            #   #     repo: context.repo.repo,
-            #   #     check_run_id: context.payload.workflow_run.id,
-            #   #   });
-
-            #   let output = "";
-
-            #   if (github.event_name === "push") {
-            #     output = "${{ steps.push_commitlint.outputs.stdout }}";
-            #   } else if (github.event_name === "pull_request") {
-            #     output = "${{ steps.pr_commitlint.outputs.stdout }}";
-            #   }
-
-            #   const annotations = [
-            #     {
-            #       path: "",
-            #       start_line: 1,
-            #       end_line: 1,
-            #       annotation_level: "failure",
-            #       message: output,
-            #     },
-            #   ];
-
-            #   const updatedData = {
-            #     ...data,
-            #     output: {
-            #       ...data.output,
-            #       annotations,
-            #     },
-            #   };
-
-            #   await checkRun.update({
-            #     owner: context.repo.owner,
-            #     repo: context.repo.repo,
-            #     check_run_id: context.payload.workflow_run.id,
-            #     output: updatedData.output,
-            #   });
-            # }
-
-            # run();
+            const output = '${{ steps.commitlint.outputs.stdout }}';
+            console.log(output);
+            const { context } = require('@actions/github');
+            const { GitHub } = require('@actions/github/lib/utils');
+            const octokit = new GitHub(process.env.GITHUB_TOKEN);
+            octokit.checks.create({
+              ...context.repo,
+              name: 'Commitlint Output',
+              head_sha: context.sha,
+              conclusion: 'success',
+              output: {
+                title: 'Commitlint Output',
+                summary: output
+              }
+            });
       
       # - name: print error info
       #   if: ${{ failure() }}
