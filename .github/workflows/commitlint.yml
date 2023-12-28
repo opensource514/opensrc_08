@@ -46,6 +46,7 @@ jobs:
         id: pr_commitlint
 
       - name: Set annotation
+        if: ${{ failure() }}
         uses: actions/github-script@v4
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
