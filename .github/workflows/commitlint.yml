@@ -61,7 +61,7 @@ jobs:
                 repo: context.repo.repo,
                 check_run_id: context.payload.workflow_run.id,
               });
-              const { checkRun } = require("@actions/github");
+              # const { checkRun } = require("@actions/github");
 
               # async function run() {
               #   const { data } = await checkRun.get({
