@@ -51,14 +51,24 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const { checkRun } = require("@actions/github");
+            const { GitHub, context } = require('@actions/github');
 
             async function run() {
-              const { data } = await checkRun.get({
+              const octokit = new GitHub(process.env.GITHUB_TOKEN);
+
+              const { data } = await octokit.rest.checks.get({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 check_run_id: context.payload.workflow_run.id,
               });
+              const { checkRun } = require("@actions/github");
+
+              # async function run() {
+              #   const { data } = await checkRun.get({
+              #     owner: context.repo.owner,
+              #     repo: context.repo.repo,
+              #     check_run_id: context.payload.workflow_run.id,
+              #   });
 
               let output = "";
 
