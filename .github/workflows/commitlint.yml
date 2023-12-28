@@ -41,6 +41,8 @@ jobs:
         run: 
           npx commitlint --from HEAD~1 --to HEAD --verbose
           echo "OUTPUT=${{ steps.push_commitlint.outputs.stdout }}" >> $GITHUB_ENV
+        env:
+          OUTPUT_FILE: ${{ github.workspace }}/commitlint-output.json
 
       - name: Validate PR commits with commitlint
         if: github.event_name == 'pull_request'
@@ -51,25 +53,11 @@ jobs:
 
       - name: Print commitlint output
         if: ${{ failure() }}
-        uses: actions/github-script@v5
+        uses: kibalabs/github-action-create-annotations@main
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const output = '${{ steps.push_commitlint.outputs.stdout }}';
-            console.log(output);
-            # const { context } = require('@actions/github');
-            const { GitHub } = require('@actions/github/lib/utils');
-            const octokit = new GitHub(process.env.GITHUB_TOKEN);
-            octokit.checks.create({
-              ...context.repo,
-              name: 'Commitlint Output',
-              head_sha: context.sha,
-              conclusion: 'success',
-              output: {
-                title: 'Commitlint Output',
-                summary: output
-              }
-            });
+          json-file-path: ${{ github.workspace }}/commitlint-output.json
+        
       
       # - name: print error info
       #   if: ${{ failure() }}
