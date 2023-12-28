@@ -49,19 +49,13 @@ jobs:
           npx commitlint --from ${{ github.event.pull_request.head.sha }}~${{ github.event.pull_request.commits }} --to ${{ github.event.pull_request.head.sha }} --verbose 
           echo "OUTPUT=${{ steps.pr_commitlint.outputs.stdout }}" >> $GITHUB_ENV
 
-      - name: Set annotation
-        if: ${{ failure() }}
-        uses: actions/github-script@v4
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Print commitlint output
         if: ${{ failure() }}
         uses: actions/github-script@v5
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const output = '${{ steps.commitlint.outputs.stdout }}';
+            const output = '${{ steps.push_commitlint.outputs.stdout }}';
             console.log(output);
             const { context } = require('@actions/github');
             const { GitHub } = require('@actions/github/lib/utils');
