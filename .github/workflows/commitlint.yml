@@ -38,17 +38,69 @@ jobs:
       - name: Validate current commit (last commit) with commitlint
         if: github.event_name == 'push'
         run: npx commitlint --from HEAD~1 --to HEAD --verbose
+        id: push_commitlint
 
       - name: Validate PR commits with commitlint
         if: github.event_name == 'pull_request'
         run: npx commitlint --from ${{ github.event.pull_request.head.sha }}~${{ github.event.pull_request.commits }} --to ${{ github.event.pull_request.head.sha }} --verbose 
-        
-      - name: print error info
-        if: ${{ failure() }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        id: pr_commitlint
+
+      - name: Set annotation
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { checkRun } = require("@actions/github");
+
+            async function run() {
+              const { data } = await checkRun.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                check_run_id: context.payload.workflow_run.id,
+              });
+
+              let output = "";
+
+              if (github.event_name === "push") {
+                output = "${{ steps.push_commitlint.outputs.stdout }}";
+              } else if (github.event_name === "pull_request") {
+                output = "${{ steps.pr_commitlint.outputs.stdout }}";
+              }
+
+              const annotations = [
+                {
+                  path: "",
+                  start_line: 1,
+                  end_line: 1,
+                  annotation_level: "failure",
+                  message: output,
+                },
+              ];
+
+              const updatedData = {
+                ...data,
+                output: {
+                  ...data.output,
+                  annotations,
+                },
+              };
+
+              await checkRun.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                check_run_id: context.payload.workflow_run.id,
+                output: updatedData.output,
+              });
+            }
+
+            run();
+      
+      # - name: print error info
+      #   if: ${{ failure() }}
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         # run: |
         #   echo "::error file=${{ github.workspace }}/error.log::$(npx commitlint --from HEAD~1 --to HEAD --verbose 2>&1 | tee -a ${GITHUB_WORKSPACE}/error.log)"
-        run: |
-          npx commitlint --from HEAD~1 --to HEAD --verbose > ${{ github.workspace }}/error.log
-          echo "::error file=${{ github.workspace }}/error.log::$(cat ${{ github.workspace }}/error.log)"
+        # run: |
+        #   npx commitlint --from HEAD~1 --to HEAD --verbose > ${{ github.workspace }}/error.log
+        #   echo "::error file=${{ github.workspace }}/error.log::$(cat ${{ github.workspace }}/error.log)"
